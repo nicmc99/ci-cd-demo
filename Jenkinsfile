@@ -7,8 +7,8 @@ pipeline {
     IMAGE_NAME    = "nicmc99/ci-cd-demo"     // change to your Docker Hub username/repo
     TAG           = "latest"
     PORTAINER_URL = "http://localhost:9000"  // or http://<your-server-ip>:9000
-    ENDPOINT_ID   = "1"                      // Portainer endpoint ID
-    STACK_ID      = "12"                     // Portainer stack ID
+    ENDPOINT_ID   = "3"                      // Portainer endpoint ID
+    STACK_ID      = "3"                     // Portainer stack ID
   }
 
   stages {
@@ -60,3 +60,4 @@ pipeline {
     }
   }
 }
+
