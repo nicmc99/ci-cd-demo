@@ -6,7 +6,7 @@ pipeline {
     REGISTRY      = "docker.io"
     IMAGE_NAME    = "nicmc99/ci-cd-demo"     // change to your Docker Hub username/repo
     TAG           = "latest"
-    PORTAINER_URL = "http://localhost:9000"  // or http://<your-server-ip>:9000
+    PORTAINER_URL = "http://host.docker.internal:9000"  // or http://<your-server-ip>:9000
     ENDPOINT_ID   = "3"                      // Portainer endpoint ID
     STACK_ID      = "3"                     // Portainer stack ID
   }
@@ -39,12 +39,13 @@ pipeline {
     }
 
     stage('Portainer Redeploy') {
-      steps {
+    steps {
         withCredentials([string(credentialsId: 'portainer-token', variable: 'PORTAINER_TOKEN')]) {
-          sh """
-            curl -sS -X POST "${PORTAINER_URL}/api/stacks/${STACK_ID}/redeploy?endpointId=${ENDPOINT_ID}&pullImage=true" \
-              -H "Authorization: Bearer ${PORTAINER_TOKEN}" \
-              -H "Content-Type: application/json"
+            sh """
+                curl -sS -X POST \
+                    "$PORTAINER_URL/api/stacks/${STACK_ID}/redeploy?endpointId=${ENDPOINT_ID}&pullImage=true" \
+                    -H "Authorization: Bearer $PORTAINER_TOKEN" \
+                    -H "Content-Type: application/json"
           """
         }
       }
@@ -60,4 +61,5 @@ pipeline {
     }
   }
 }
+
 
