@@ -46,6 +46,17 @@ pipeline {
   }
 }
 
+    stage('Test Image') {
+  steps {
+    sh '''
+      set -e
+      echo "Running basic test inside the image..."
+      docker run --rm ${IMAGE_NAME}:latest python -m py_compile app.py
+    '''
+  }
+}
+
+
 
    stage('Docker Login & Push') {
   steps {
@@ -98,6 +109,7 @@ pipeline {
     }
   }
 }
+
 
 
 
