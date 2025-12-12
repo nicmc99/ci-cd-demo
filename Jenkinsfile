@@ -31,12 +31,21 @@ pipeline {
 
 
    stage('Docker Build') {
-      steps {
-        sh """
-          docker build -t ${IMAGE_NAME}:${TAG} .
-        """
-      }
-    }
+  steps {
+    sh '''
+      set -e
+
+      GIT_SHA=$(git rev-parse --short=7 HEAD)
+      VERSION_TAG="${BUILD_NUMBER}-${GIT_SHA}"
+
+      echo "Building image with APP_VERSION=${VERSION_TAG}"
+      docker build \
+        --build-arg APP_VERSION="${VERSION_TAG}" \
+        -t ${IMAGE_NAME}:latest .
+    '''
+  }
+}
+
 
    stage('Docker Login & Push') {
   steps {
@@ -89,6 +98,7 @@ pipeline {
     }
   }
 }
+
 
 
 
