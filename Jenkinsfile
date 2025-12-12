@@ -19,7 +19,18 @@ pipeline {
       }
     }
 
-    stage('Docker Build') {
+    stage('Build Info') {
+  steps {
+    sh '''
+      echo "Jenkins build number: ${BUILD_NUMBER}"
+      echo "Git commit:"
+      git rev-parse --short=12 HEAD
+    '''
+  }
+}
+
+
+   stage('Docker Build') {
       steps {
         sh """
           docker build -t ${IMAGE_NAME}:${TAG} .
@@ -27,16 +38,33 @@ pipeline {
       }
     }
 
-    stage('Docker Login & Push') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
-          sh """
-            echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin ${REGISTRY}
-            docker push ${IMAGE_NAME}:${TAG}
-          """
-        }
-      }
+   stage('Docker Login & Push') {
+  steps {
+    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+      sh '''
+        set -e
+
+        # Build a version tag like "12-a1b2c3d"
+        GIT_SHA=$(git rev-parse --short=7 HEAD)
+        VERSION_TAG="${BUILD_NUMBER}-${GIT_SHA}"
+
+        echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin ${REGISTRY}
+
+        echo "Pushing latest image..."
+        docker push ${IMAGE_NAME}:latest
+
+        echo "Tagging and pushing versioned image: ${IMAGE_NAME}:${VERSION_TAG}"
+        docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${VERSION_TAG}
+        docker push ${IMAGE_NAME}:${VERSION_TAG}
+
+        echo "Pushed tags:"
+        echo "  - ${IMAGE_NAME}:latest"
+        echo "  - ${IMAGE_NAME}:${VERSION_TAG}"
+      '''
     }
+  }
+}
+
 
     stage('Portainer Redeploy') {
     steps {
@@ -61,5 +89,6 @@ pipeline {
     }
   }
 }
+
 
 
