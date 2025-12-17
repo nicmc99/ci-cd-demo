@@ -19,15 +19,16 @@ pipeline {
       }
     }
 
-    stage('Build Info') {
-  steps {
-    sh '''
-      echo "Jenkins build number: ${BUILD_NUMBER}"
-      echo "Git commit:"
-      git rev-parse --short=12 HEAD
-    '''
-  }
+    stage('Test Image') {
+    steps {
+        sh '''
+            set -e
+            echo "Running pytest inside the image..."
+            docker run --rm nicmc99/ci-cd-demo:latest pytest -q
+        '''
+    }
 }
+
 
 
    stage('Docker Build') {
@@ -109,6 +110,7 @@ pipeline {
     }
   }
 }
+
 
 
 
